@@ -1,0 +1,243 @@
+<!-- homepage.html (Logged-in homepage) -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RentEasy • Welcome</title>
+  <!-- Tailwind via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+  <!-- NAVBAR -->
+  <nav class="bg-gradient-to-r from-indigo-600 to-purple-700 text-white shadow-md">
+    <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+      <a href="homepage.html" class="text-2xl font-bold">RentEasy</a>
+      <ul class="space-x-6 hidden md:flex">
+        <li><a href="search.html" class="hover:text-indigo-200">Search</a></li>
+        <li><a href="about.html" class="hover:text-indigo-200">About/FAQ</a></li>
+        <li><a href="contact.html" class="hover:text-indigo-200">Support</a></li>
+      </ul>
+      <div id="auth-links" class="space-x-4">
+        <a href="javascript:void(0);" id="dashboard-btn" class="px-4 py-2 border rounded hover:bg-gray-100">Go to Dashboard</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO / SEARCH -->
+  <header class="bg-white mt-6 shadow-lg">
+    <div class="container mx-auto px-4 py-12 text-center">
+      <h1 class="text-4xl font-extrabold text-gray-800 mb-4">Find Your Next Home</h1>
+      <form action="search.html" method="get" class="max-w-2xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-4">
+        <input type="text" name="location" placeholder="Location (city, barangay…)" 
+              class="p-3 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-400">
+        <select name="price" class="p-3 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-400">
+          <option value="">Any Price</option>
+          <option value="0-5000">₱0–₱5,000</option>
+          <option value="5000-10000">₱5,000–₱10,000</option>
+          <option value="10000+">₱10,000+</option>
+        </select>
+        <select name="type" class="p-3 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-400">
+          <option value="">Any Type</option>
+          <option value="apartment">Apartment</option>
+          <option value="house">House</option>
+          <option value="condo">Condo</option>
+        </select>
+        <button type="submit" 
+                class="p-3 bg-indigo-600 text-white font-semibold rounded hover:bg-indigo-700">
+          Search
+        </button>
+      </form>
+    </div>
+  </header>
+
+  <!-- LISTING SECTION -->
+  <section class="bg-white mt-10 py-10 shadow-inner">
+    <div class="container mx-auto px-4 max-w-3xl">
+      <h2 class="text-2xl font-bold mb-6 text-center text-indigo-700">Add New Property</h2>
+      <form id="propertyForm" class="grid gap-4">
+        <input type="text" placeholder="Property Name or Type (e.g. Condo, Apartment)" id="property-name" class="p-3 border rounded">
+        <input type="text" placeholder="Location (City, Barangay, etc.)" id="property-location" class="p-3 border rounded">
+
+        <div class="flex space-x-2">
+          <input type="number" placeholder="₱ Min" id="price-min" class="p-3 border rounded w-1/2">
+          <input type="number" placeholder="₱ Max" id="price-max" class="p-3 border rounded w-1/2">
+        </div>
+
+        <input type="text" placeholder="Image URL" id="property-image" class="p-3 border rounded">
+
+        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold p-3 rounded">
+          Add Listing
+        </button>
+      </form>
+      <p id="submit-msg" class="mt-4 text-center text-green-600 hidden">Property added successfully!</p>
+      <p id="error-msg" class="mt-2 text-center text-red-600 hidden">Please fill in all fields correctly.</p>
+    </div>
+  </section>
+
+  <!-- DISPLAY PROPERTY LISTINGS -->
+  <section class="bg-gray-50 py-10">
+    <div class="container mx-auto px-4">
+      <h2 class="text-2xl font-bold text-center mb-6 text-indigo-700">Available Properties</h2>
+      <div id="property-listings" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Listings will appear here -->
+      </div>
+    </div>
+  </section>
+
+  <!-- PUBLIC VIEW OF APPROVED PROPERTIES -->
+  <section class="bg-gray-50 py-10">
+    <div class="container mx-auto px-4">
+      <h2 class="text-2xl font-bold text-center mb-6 text-indigo-700">Public View of Approved Properties</h2>
+      <div id="approved-properties" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Dummy approved property listings -->
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+          <img src="https://via.placeholder.com/500x300" alt="Approved Property 1" class="w-full h-48 object-cover">
+          <div class="p-4">
+            <h3 class="text-lg font-bold mb-1">Luxury House in Manila</h3>
+            <p class="text-gray-600">Manila, Philippines</p>
+            <p class="text-indigo-600 font-semibold mt-2">₱10,000 – ₱15,000</p>
+            <span class="inline-block mt-2 px-2 py-1 text-sm text-white bg-green-500 rounded-full">Approved</span>
+          </div>
+        </div>
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+          <img src="https://via.placeholder.com/500x300" alt="Approved Property 2" class="w-full h-48 object-cover">
+          <div class="p-4">
+            <h3 class="text-lg font-bold mb-1">Cozy Condo in Cebu</h3>
+            <p class="text-gray-600">Cebu, Philippines</p>
+            <p class="text-indigo-600 font-semibold mt-2">₱8,000 – ₱12,000</p>
+            <span class="inline-block mt-2 px-2 py-1 text-sm text-white bg-green-500 rounded-full">Approved</span>
+          </div>
+        </div>
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+          <img src="https://via.placeholder.com/500x300" alt="Approved Property 3" class="w-full h-48 object-cover">
+          <div class="p-4">
+            <h3 class="text-lg font-bold mb-1">Modern Apartment in Davao</h3>
+            <p class="text-gray-600">Davao, Philippines</p>
+            <p class="text-indigo-600 font-semibold mt-2">₱6,000 – ₱9,000</p>
+            <span class="inline-block mt-2 px-2 py-1 text-sm text-white bg-green-500 rounded-full">Approved</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FIREBASE + DISPLAY SCRIPT -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+    import { getAuth } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
+    import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+    import { query, where } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyA5i8nbw8A4JDVUlJF3fZ7MIs9ed7S6fIc",
+      authDomain: "rent4rent-e1e0b.firebaseapp.com",
+      projectId: "rent4rent-e1e0b",
+      storageBucket: "rent4rent-e1e0b.appspot.com",
+      messagingSenderId: "467128925177",
+      appId: "1:467128925177:web:b62c625847db1a18319b28",
+      measurementId: "G-EJ0PL7CNQQ"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const dashboardBtn = document.getElementById("dashboard-btn");
+    dashboardBtn.addEventListener("click", () => {
+      window.location.href = "dashboard.html";
+    });
+
+    const form = document.getElementById("propertyForm");
+    const msg = document.getElementById("submit-msg");
+    const errorMsg = document.getElementById("error-msg");
+    form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const name = document.getElementById("property-name").value.trim();
+  const location = document.getElementById("property-location").value.trim();
+  const minPrice = document.getElementById("price-min").value.trim();
+  const maxPrice = document.getElementById("price-max").value.trim();
+  const image = document.getElementById("property-image").value.trim();
+
+  if (!name || !location || !minPrice || !maxPrice || !image) {
+    errorMsg.classList.remove("hidden");
+    msg.classList.add("hidden");
+    return;
+  }
+
+  const price = `₱${minPrice} – ₱${maxPrice}`;
+
+  // Wait for auth state to be ready
+  auth.onAuthStateChanged(async (user) => {
+    const submittedBy = user ? user.email : "Unknown";
+
+    try {
+      await addDoc(collection(db, "property"), {
+        name,
+        location,
+        price,
+        image,
+        status: "In Review",
+        createdAt: new Date(),
+        submittedBy,
+      });
+
+      msg.classList.remove("hidden");
+      errorMsg.classList.add("hidden");
+      form.reset();
+      loadProperties(); // Reload the listings
+
+      setTimeout(() => {
+        msg.classList.add("hidden");
+      }, 3000);
+    } catch (err) {
+      console.error("Error adding document: ", err);
+    }
+  });
+});
+    // Load properties
+    const listingsContainer = document.getElementById("property-listings");
+
+    async function loadProperties() {
+      const querySnapshot = await getDocs(collection(db, "property"));
+      listingsContainer.innerHTML = "";
+
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+
+        const card = document.createElement("div");
+        card.className = "bg-white rounded-lg shadow-md overflow-hidden";
+
+        card.innerHTML = `
+          <img src="${data.image}" alt="${data.name}" class="w-full h-48 object-cover">
+          <div class="p-4">
+            <h3 class="text-lg font-bold mb-1">${data.name}</h3>
+            <p class="text-gray-600">${data.location}</p>
+            <p class="text-indigo-600 font-semibold mt-2">${data.price}</p>
+            <span class="inline-block mt-2 px-2 py-1 text-sm text-white ${getStatusBadgeColor(data.status)} rounded-full">${data.status}</span>
+          </div>
+        `;
+
+        listingsContainer.appendChild(card);
+      });
+    }
+
+    function getStatusBadgeColor(status) {
+      switch (status) {
+        case "Approved":
+          return "bg-green-500";
+        case "Rejected":
+          return "bg-red-500";
+        case "In Review":
+        default:
+          return "bg-yellow-500";
+      }
+    }
+
+    // Load on page load
+    loadProperties();
+  </script>
+</body>
+</html>

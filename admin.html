@@ -1,0 +1,64 @@
+<!-- admin.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Login</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+
+  <div class="bg-white p-6 rounded-xl shadow-md w-full max-w-sm text-center">
+    <h1 class="text-2xl font-bold mb-4 text-red-600">Admin Login</h1>
+    <form id="login-form">
+      <input type="email" id="email" placeholder="Enter your email" class="mb-4 p-2 border rounded w-full" required />
+      <input type="password" id="password" placeholder="Enter your password" class="mb-4 p-2 border rounded w-full" required />
+      <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded w-full">Login</button>
+    </form>
+    <p class="mt-4 text-gray-600">Not an admin? <a href="index.html" class="text-blue-500">Go to Homepage</a></p>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyA5i8nbw8A4JDVUlJF3fZ7MIs9ed7S6fIc",
+      authDomain: "rent4rent-e1e0b.firebaseapp.com",
+      projectId: "rent4rent-e1e0b",
+      storageBucket: "rent4rent-e1e0b.appspot.com",
+      messagingSenderId: "467128925177",
+      appId: "1:467128925177:web:b62c625847db1a18319b28",
+      measurementId: "G-EJ0PL7CNQQ"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    const loginForm = document.getElementById("login-form");
+    loginForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+
+      try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+
+        // Check if the logged-in user is an admin
+        if (user.email === "adminrent4rent@gmail.com") {  // Assuming admin email
+          window.location.href = "admin-dashboard.html";  // Redirect to admin dashboard
+        } else {
+          alert("You are not authorized to access the admin dashboard.");
+        }
+      } catch (error) {
+        console.error(error);
+        alert("Login failed. Please check your credentials.");
+      }
+    });
+  </script>
+
+</body>
+</html>

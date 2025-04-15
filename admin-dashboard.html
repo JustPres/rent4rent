@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - TailAdmin Style</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body class="bg-gray-100 min-h-screen">
+  <!-- Sidebar -->
+  <div class="flex h-screen">
+    <aside class="bg-white w-64 p-5 shadow-md">
+      <h2 class="text-xl font-bold text-red-600 mb-6">🏠 Rent4Rent Admin</h2>
+      <nav class="flex flex-col gap-4">
+        <a href="#" class="text-gray-700 hover:text-red-500 flex items-center gap-2">
+          <i class="fas fa-gauge"></i> Dashboard
+        </a>
+        <a href="#" class="text-gray-700 hover:text-red-500 flex items-center gap-2">
+          <i class="fas fa-clock"></i> Queue Listings
+        </a>
+        <a href="#" class="text-gray-700 hover:text-red-500 flex items-center gap-2">
+          <i class="fas fa-house"></i> All Listings
+        </a>
+        <a href="#" class="text-gray-700 hover:text-red-500 flex items-center gap-2">
+          <i class="fas fa-users"></i> Users
+        </a>
+      </nav>
+      <button id="logout-btn" class="mt-10 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 w-full">
+        Logout
+      </button>
+    </aside>
+
+    <!-- Main content -->
+    <main class="flex-1 p-8 overflow-y-auto">
+      <div class="mb-6">
+        <h1 class="text-2xl font-bold">Welcome Admin 🛠️</h1>
+        <p class="text-gray-600">Manage all user listings and activities here.</p>
+      </div>
+
+      <!-- Listings Queue Table -->
+      <div class="bg-white rounded-lg shadow p-6">
+        <h2 class="text-xl font-semibold mb-4">📥 Listings Pending Review</h2>
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead>
+              <tr class="bg-gray-50">
+                <th class="px-4 py-2 text-left text-sm font-semibold text-gray-700">Title</th>
+                <th class="px-4 py-2 text-left text-sm font-semibold text-gray-700">Submitted By</th>
+                <th class="px-4 py-2 text-left text-sm font-semibold text-gray-700">Date</th>
+                <th class="px-4 py-2 text-left text-sm font-semibold text-gray-700">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="pending-listings" class="bg-white divide-y divide-gray-200">
+              <!-- Dynamically loaded listings will appear here -->
+              <tr>
+                <td class="px-4 py-2">Modern Condo</td>
+                <td class="px-4 py-2">john@example.com</td>
+                <td class="px-4 py-2">April 15, 2025</td>
+                <td class="px-4 py-2 flex gap-2">
+                  <button class="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600">Approve</button>
+                  <button class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">Reject</button>
+                </td>
+              </tr>
+              <!-- More rows will go here -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+    import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
+    import {
+      getFirestore,
+      collection,
+      query,
+      where,
+      getDocs,
+      updateDoc,
+      doc
+    } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+  
+    const firebaseConfig = {
+      apiKey: "AIzaSyA5i8nbw8A4JDVUlJF3fZ7MIs9ed7S6fIc",
+      authDomain: "rent4rent-e1e0b.firebaseapp.com",
+      projectId: "rent4rent-e1e0b",
+      storageBucket: "rent4rent-e1e0b.appspot.com",
+      messagingSenderId: "467128925177",
+      appId: "1:467128925177:web:b62c625847db1a18319b28",
+      measurementId: "G-EJ0PL7CNQQ"
+    };
+  
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+  
+    // Logout Button
+    document.getElementById("logout-btn").addEventListener("click", () => {
+      signOut(auth).then(() => {
+        alert("Logged out successfully");
+        window.location.href = "index.html";
+      }).catch((error) => {
+        console.error("Logout error", error);
+        alert("Failed to logout");
+      });
+    });
+  
+   // Load Pending Listings
+async function loadPendingListings() {
+  console.log("Loading pending listings..."); // Debugging line
+  const listingsRef = collection(db, "property");
+  const q = query(listingsRef, where("status", "==", "In Review"));
+  // Ensure this matches your Firestore data exactly
+
+  try {
+    const querySnapshot = await getDocs(q);
+    console.log("Query Snapshot:", querySnapshot);  // Add this line to check the snapshot
+    console.log("Fetched documents:", querySnapshot.size); // Lo g the number of documents fetched
+    const tableBody = document.getElementById("pending-listings");
+    tableBody.innerHTML = ""; // Clear old data
+
+    if (querySnapshot.empty) {
+      tableBody.innerHTML = "<tr><td colspan='4' class='text-center text-gray-500'>No pending listings.</td></tr>";
+    }
+
+    querySnapshot.forEach((docSnap) => {
+      console.log(docSnap.data()); // Log raw data for debugging
+      const data = docSnap.data();
+      const row = document.createElement("tr");
+
+      const createdAt = data.createdAt?.seconds
+        ? new Date(data.createdAt.seconds * 1000).toLocaleDateString()
+        : "N/A";
+
+      row.innerHTML = `
+        <td class="px-4 py-2">${data.name || "Untitled"}</td>
+        <td class="px-4 py-2">${data.submittedBy || "Unknown"}</td>
+        <td class="px-4 py-2">${createdAt}</td>
+        <td class="px-4 py-2 flex gap-2">
+          <button class="approve-btn bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600" data-id="${docSnap.id}">Approve</button>
+          <button class="reject-btn bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600" data-id="${docSnap.id}">Reject</button>
+        </td>
+      `;
+      tableBody.appendChild(row);
+    });
+
+    attachActionEvents();
+  } catch (error) {
+    console.error("Error fetching data:", error);
+  }
+}
+
+  
+    // Attach Approve/Reject Buttons
+    function attachActionEvents() {
+      document.querySelectorAll(".approve-btn").forEach(button => {
+        button.addEventListener("click", () => updateStatus(button.dataset.id, "approved"));
+      });
+  
+      document.querySelectorAll(".reject-btn").forEach(button => {
+        button.addEventListener("click", () => updateStatus(button.dataset.id, "rejected"));
+      });
+    }
+  
+    // Update Listing Status
+    async function updateStatus(docId, newStatus) {
+      const listingRef = doc(db, "property", docId);
+      try {
+        await updateDoc(listingRef, { status: newStatus });
+        alert(`Listing marked as ${newStatus}`);
+        loadPendingListings(); // Refresh
+      } catch (error) {
+        console.error("Failed to update status:", error);
+        alert("Error updating listing");
+      }
+    }
+  
+    // On page load
+    loadPendingListings();
+  </script>
+  
+  
+</body>
+
+</html>
