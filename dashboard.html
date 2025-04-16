@@ -13,56 +13,59 @@
   <div class="w-full max-w-7xl mx-auto p-6 bg-white shadow-lg rounded-lg">
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 
-      <!-- Sidebar -->
-      <div class="bg-gradient-to-r from-indigo-600 to-purple-700 text-white p-8 rounded-xl shadow-xl">
-        <div class="space-y-4">
-          <a href="homepage.html" class="block text-white text-lg font-semibold hover:text-indigo-200">Home</a>
-          <a href="my-listings.html" class="block text-white text-lg font-semibold hover:text-indigo-200">My Listings</a>
-          <a href="account-settings.html" class="block text-white text-lg font-semibold hover:text-indigo-200">Account Settings</a>
-          <button id="logout-btn" class="w-full py-2 px-4 mt-6 rounded-full bg-red-500 hover:bg-red-600 text-white font-semibold">Logout</button>
-        </div>
-      </div>
-
-      <!-- Main Content -->
-      <div class="col-span-2 p-8 bg-white rounded-xl shadow-xl">
-        <div class="flex justify-between items-center mb-6">
-          <h1 class="text-3xl font-extrabold text-gray-800">Your Dashboard</h1>
-          <p class="text-sm text-gray-500">Logged in since: <span id="login-time" class="font-semibold text-indigo-600">Fetching...</span></p>
-        </div>
-
-        <!-- Stats Cards -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-          <div class="bg-blue-600 text-white p-6 rounded-lg shadow-md">
-            <h3 class="text-xl font-semibold">Active Listings</h3>
-            <p id="active-count" class="text-3xl font-bold">0</p>
-          </div>
-          <div class="bg-green-600 text-white p-6 rounded-lg shadow-md">
-            <h3 class="text-xl font-semibold">Pending Approvals</h3>
-            <p id="pending-count" class="text-3xl font-bold">0</p>
-          </div>
-          <div class="bg-yellow-600 text-white p-6 rounded-lg shadow-md">
-            <h3 class="text-xl font-semibold">Messages</h3>
-            <p class="text-3xl font-bold">0</p>
-          </div>
-        </div>
-
-        <!-- Activity Feed -->
-        <div class="bg-gray-50 p-6 rounded-xl shadow-md">
-          <h2 class="text-2xl font-semibold text-gray-800 mb-4">Your Listings</h2>
-          <ul id="listing-feed" class="space-y-4">
-            <!-- Listings will appear here -->
-          </ul>
-        </div>
-      </div>
-
+   <!-- Sidebar -->
+   <div class="lg:w-64 w-full bg-gradient-to-r from-indigo-600 to-purple-700 text-white p-8 rounded-xl shadow-xl h-auto">
+    <div class="space-y-4">
+      <a href="homepage.html" class="block text-white text-lg font-semibold hover:text-indigo-200">Home</a>
+      <a href="my-listings.html" class="block text-white text-lg font-semibold hover:text-indigo-200">My Listings</a>
+      <a href="account-settings.html" class="block text-white text-lg font-semibold hover:text-indigo-200">Account Settings</a>
+      <button id="logout-btn" class="w-full py-2 px-4 mt-6 rounded-full bg-red-500 hover:bg-red-600 text-white font-semibold">Logout</button>
     </div>
   </div>
+
+<!-- Hamburger Icon for Larger Screens -->
+<button id="hamburger-btn" class="lg:hidden p-2 rounded-md text-white bg-indigo-600 hover:bg-indigo-700">
+  <i class="fas fa-bars"></i>
+</button>
+
+<!-- Main Content -->
+<div class="lg:col-span-2 p-8 bg-white rounded-xl shadow-xl">
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-3xl font-extrabold text-gray-800">Your Dashboard</h1>
+    <p class="text-sm text-gray-500">Logged in since: <span id="login-time" class="font-semibold text-indigo-600">Fetching...</span></p>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+    <div class="bg-blue-600 text-white p-6 rounded-lg shadow-md">
+      <h3 class="text-xl font-semibold">Active Listings</h3>
+      <p id="active-count" class="text-3xl font-bold">0</p>
+    </div>
+    <div class="bg-green-600 text-white p-6 rounded-lg shadow-md">
+      <h3 class="text-xl font-semibold">Pending Approvals</h3>
+      <p id="pending-count" class="text-3xl font-bold">0</p>
+    </div>
+    <div class="bg-yellow-600 text-white p-6 rounded-lg shadow-md">
+      <h3 class="text-xl font-semibold">Messages</h3>
+      <p class="text-3xl font-bold">0</p>
+    </div>
+  </div>
+
+  <!-- Activity Feed -->
+  <div class="bg-gray-50 p-6 rounded-xl shadow-md">
+    <h2 class="text-2xl font-semibold text-gray-800 mb-4">Your Listings</h2>
+    <ul id="listing-feed" class="space-y-4">
+      <!-- Listings will appear here -->
+    </ul>
+  </div>
+</div>
 
   <!-- Firebase Scripts -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
-    import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+    
 
     const firebaseConfig = {
       apiKey: "AIzaSyA5i8nbw8A4JDVUlJF3fZ7MIs9ed7S6fIc",
@@ -84,52 +87,65 @@
     const activeCountEl = document.getElementById("active-count");
     const pendingCountEl = document.getElementById("pending-count");
 
-    onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        loginTime.textContent = new Date(user.metadata.creationTime).toLocaleString();
+    onAuthStateChanged(auth, (user) => {
+  if (user) {
+    loginTime.textContent = new Date(user.metadata.creationTime).toLocaleString();
 
-        let activeCount = 0;
-        let pendingCount = 0;
+    let activeCount = 0;
+    let pendingCount = 0;
 
-        // Fetch listings specific to the logged-in user
-        const propertyRef = collection(db, "property");
-        const q = query(propertyRef, where("owner", "==", user.uid));
-        const querySnapshot = await getDocs(q);
+    // Set up a real-time listener for the properties
+    const propertyRef = collection(db, "property");
+    const q = query(propertyRef, where("submittedBy", "==", user.email));
 
-        querySnapshot.forEach((doc) => {
-          const data = doc.data();
+    // Listen for real-time updates
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      console.log("Realtime snapshot triggered. Docs:", querySnapshot.size);
+      listingFeed.innerHTML = ""; // Clear current listings
+      activeCount = 0;
+      pendingCount = 0;
 
-          // Count by status
-          if (data.status === "Approved") activeCount++;
-          else if (data.status === "In Review") pendingCount++;
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
 
-          // Render each listing
-          const li = document.createElement("li");
-          li.className = "bg-white p-4 border rounded-lg shadow-sm";
-          li.innerHTML = `
-            <h3 class="text-lg font-semibold">${data.title}</h3>
-            <p>${data.location} — <span class="font-semibold">${data.price}</span></p>
-            <span class="text-sm font-medium text-${data.status === 'Approved' ? 'green' : 'yellow'}-600">${data.status}</span>
-          `;
-          listingFeed.appendChild(li);
-        });
+        // Count by status
+        if (data.status === "Approved") activeCount++;
+        else if (data.status === "In Review") pendingCount++;
 
-        activeCountEl.textContent = activeCount;
-        pendingCountEl.textContent = pendingCount;
-      } else {
-        window.location.href = "index.html"; // Redirect to login if not logged in
-      }
+        // Render each listing
+      // Render each listing
+const li = document.createElement("li");
+li.className = "bg-white p-4 border rounded-lg shadow-sm";
+li.innerHTML = `
+  <h3 class="text-lg font-semibold">${data.name || 'N/A'}</h3> <!-- Default to 'N/A' if propertyType is undefined -->
+  <p>${data.location} — <span class="font-semibold">${data.price}</span></p>
+  <span class="text-sm font-medium text-${data.status === 'Approved' ? 'green' : 'yellow'}-600">${data.status}</span>
+`;
+listingFeed.appendChild(li);
+
+      });
+
+      // Update stats
+      activeCountEl.textContent = activeCount;
+      pendingCountEl.textContent = pendingCount;
     });
 
+    // Clean up listener when user logs out
     logoutBtn.addEventListener("click", () => {
       signOut(auth).then(() => {
         alert("Logged out!");
         window.location.href = "index.html";
+        unsubscribe(); // Unsubscribe from the listener on logout
       }).catch((error) => {
         console.error(error);
         alert("Failed to logout.");
       });
     });
+  } else {
+    window.location.href = "index.html"; // Redirect to login if no user is logged in
+  }
+});
+
   </script>
 </body>
 
