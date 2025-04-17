@@ -14,7 +14,6 @@
     <div class="container mx-auto px-4 py-4 flex justify-between items-center">
       <a href="homepage.html" class="text-2xl font-bold">RentEasy</a>
       <ul class="space-x-6 hidden md:flex">
-        <li><a href="search.html" class="hover:text-indigo-200">Search</a></li>
         <li><a href="about.html" class="hover:text-indigo-200">About/FAQ</a></li>
         <li><a href="contact.html" class="hover:text-indigo-200">Support</a></li>
       </ul>
@@ -28,26 +27,30 @@
   <header class="bg-white mt-6 shadow-lg">
     <div class="container mx-auto px-4 py-12 text-center">
       <h1 class="text-4xl font-extrabold text-gray-800 mb-4">Find Your Next Home</h1>
-      <form action="search.html" method="get" class="max-w-2xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-4">
-        <input type="text" name="location" placeholder="Location (city, barangay…)" 
+      <form id="search-form" class="max-w-2xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-4">
+        <input type="text" id="search-location" placeholder="Location (city, barangay…)" 
               class="p-3 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-400">
-        <select name="price" class="p-3 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-400">
+        
+        <select id="search-price" class="p-3 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-400">
           <option value="">Any Price</option>
           <option value="0-5000">₱0–₱5,000</option>
           <option value="5000-10000">₱5,000–₱10,000</option>
           <option value="10000+">₱10,000+</option>
         </select>
-        <select name="type" class="p-3 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-400">
+        
+        <select id="search-type" class="p-3 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-400">
           <option value="">Any Type</option>
           <option value="apartment">Apartment</option>
           <option value="house">House</option>
           <option value="condo">Condo</option>
         </select>
+        
         <button type="submit" 
                 class="p-3 bg-indigo-600 text-white font-semibold rounded hover:bg-indigo-700">
           Search
         </button>
       </form>
+      
     </div>
   </header>
 
@@ -60,8 +63,8 @@
         <input type="text" placeholder="Location (City, Barangay, etc.)" id="property-location" class="p-3 border rounded">
 
         <div class="flex space-x-2">
-          <input type="number" placeholder="₱ Min" id="price-min" class="p-3 border rounded w-1/2">
-          <input type="number" placeholder="₱ Max" id="price-max" class="p-3 border rounded w-1/2">
+          <input type="number" inputmode="numeric" pattern="\d*" placeholder="₱ Min" id="price-min" class="p-3 border rounded w-1/2">
+          <input type="number" inputmode="numeric" pattern="\d*" placeholder="₱ Max" id="price-max" class="p-3 border rounded w-1/2">
         </div>
 
         <input type="text" placeholder="Image URL" id="property-image" class="p-3 border rounded">
@@ -76,6 +79,11 @@
   </section>
 
   <!-- DISPLAY PROPERTY LISTINGS -->
+  <div class="text-center my-4">
+    <button id="toggle-listings" class="bg-indigo-600 text-white px-4 py-2 rounded shadow hover:bg-indigo-700 transition">
+      Hide Listings
+    </button>
+  </div>
   <section class="bg-gray-50 py-10">
     <div class="container mx-auto px-4">
       <h2 class="text-2xl font-bold text-center mb-6 text-indigo-700">Your Available Properties</h2>
@@ -262,5 +270,109 @@ function getStatusBadgeColor(status) {
   }
 });
   </script>
+  <!--- This section is not working fixing it tomorrow : )-->
+  <script>
+    const toggleButton = document.getElementById("toggle-listings");
+    const listingsSection = document.querySelector("section.bg-gray-50");
+  
+    toggleButton.addEventListener("click", () => {
+      if (listingsSection.style.display === "none") {
+        listingsSection.style.display = "block";
+        toggleButton.textContent = "Hide Listings";
+      } else {
+        listingsSection.style.display = "none";
+        toggleButton.textContent = "Show Listings";
+      }
+    });
+  </script>
+  <script type="module">
+    // Assuming this is after your listings are loaded
+    const locationInput = document.getElementById('search-location');
+    const priceSelect = document.getElementById('search-price');
+    const typeSelect = document.getElementById('search-type');
+    const propertyListings = document.getElementById('property-listings');
+  
+    // Popup for showing feedback (hidden initially)
+    const popup = document.createElement('div');
+    popup.id = 'filter-popup';
+    popup.className = 'fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-green-600 text-white px-4 py-2 rounded-md shadow-md opacity-0 pointer-events-none';
+    popup.innerHTML = '<p>Filter Applied Successfully!</p>';
+    document.body.appendChild(popup);
+  
+    function showFilterPopup() {
+      // Show popup
+      popup.classList.remove('opacity-0', 'pointer-events-none');
+      popup.classList.add('opacity-100', 'pointer-events-auto');
+  
+      // Hide popup after 3 seconds
+      setTimeout(() => {
+        popup.classList.remove('opacity-100', 'pointer-events-auto');
+        popup.classList.add('opacity-0', 'pointer-events-none');
+      }, 3000);
+    }
+  
+    function filterListings() {
+  const location = locationInput.value.toLowerCase().trim();
+  const priceRange = priceSelect.value;
+  const type = typeSelect.value;
+
+  const cards = propertyListings.querySelectorAll('.property-card');
+
+  cards.forEach(card => {
+    const cardLocation = card.dataset.location?.toLowerCase() || "";
+    const cardName = card.dataset.name?.toLowerCase() || "";
+    const cardPrice = parseInt(card.dataset.price);
+    const cardType = card.dataset.type?.toLowerCase();
+
+    let matches = true;
+
+    // Match by location or name (whole word or contains)
+    if (location) {
+      const matchWord = new RegExp(`\\b${location}\\b`, 'i');
+      if (!cardLocation.includes(location) && !cardName.includes(location) && !matchWord.test(cardName)) {
+        matches = false;
+      }
+    }
+
+    // Match by type
+    if (type && cardType !== type) {
+      matches = false;
+    }
+
+    // Match by price range
+    if (priceRange) {
+      if (priceRange === "0-5000" && !(cardPrice >= 0 && cardPrice <= 5000)) matches = false;
+      if (priceRange === "5000-10000" && !(cardPrice > 5000 && cardPrice <= 10000)) matches = false;
+      if (priceRange === "10000+" && cardPrice <= 10000) matches = false;
+    }
+
+    card.style.display = matches ? "block" : "none";
+    card.classList.add("transition-all", "duration-300", "ease-in-out");
+    card.style.opacity = matches ? 1 : 0;
+  });
+
+
+  
+      // Log the search criteria and filtered results for testing
+      console.log('Search Criteria:', { location, priceRange, type });
+  
+      // Show the popup
+      showFilterPopup();
+    }
+  
+    // Add event listeners for live filtering
+    const searchForm = document.getElementById('search-form');
+    searchForm.addEventListener('submit', (e) => {
+      e.preventDefault(); // prevents redirect to search.html
+      filterListings();   // manually trigger filter
+    });
+  
+    [locationInput, priceSelect, typeSelect].forEach(input => {
+      input.addEventListener('input', filterListings);
+      input.addEventListener('change', filterListings);
+    });
+  </script>
+  
+  
 </body>
 </html>

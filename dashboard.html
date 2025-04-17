@@ -17,7 +17,6 @@
    <div class="lg:w-64 w-full bg-gradient-to-r from-indigo-600 to-purple-700 text-white p-8 rounded-xl shadow-xl h-auto">
     <div class="space-y-4">
       <a href="homepage.html" class="block text-white text-lg font-semibold hover:text-indigo-200">Home</a>
-      <a href="my-listings.html" class="block text-white text-lg font-semibold hover:text-indigo-200">My Listings</a>
       <a href="account-settings.html" class="block text-white text-lg font-semibold hover:text-indigo-200">Account Settings</a>
       <button id="logout-btn" class="w-full py-2 px-4 mt-6 rounded-full bg-red-500 hover:bg-red-600 text-white font-semibold">Logout</button>
     </div>
@@ -61,7 +60,8 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
     import { getFirestore, collection, getDocs, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
-    
+    import { deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+
 
     const firebaseConfig = {
       apiKey: "AIzaSyA5i8nbw8A4JDVUlJF3fZ7MIs9ed7S6fIc",
@@ -103,9 +103,9 @@
 
       querySnapshot.forEach((doc) => {
   const data = doc.data();
-  console.log("Status value from Firestore:", `"${data.status}"`);
+  const docRef = doc.ref; // we need this for deletion
 
-  const status = data.status?.toLowerCase().trim(); // Normalize the status
+  const status = data.status?.toLowerCase().trim();
   let statusClass = "";
 
   if (status === "approved") {
@@ -126,9 +126,30 @@
     <span class="inline-block px-2 py-1 mt-2 text-sm font-semibold rounded-full ${statusClass}">
       ${data.status}
     </span>
+    <button class="delete-btn mt-3 ml-2 bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm">
+      Delete
+    </button>
   `;
+  
+  // Append the listing to the feed
   listingFeed.appendChild(li);
+
+  // Setup delete button
+  const deleteBtn = li.querySelector('.delete-btn');
+  deleteBtn.addEventListener("click", async () => {
+    const confirmDelete = confirm("Are you sure you want to delete this property?");
+    if (confirmDelete) {
+      try {
+        await deleteDoc(docRef);
+        alert("Property deleted successfully.");
+      } catch (error) {
+        console.error("Error deleting property:", error);
+        alert("Failed to delete property.");
+      }
+    }
+  });
 });
+
 
 
       // Update stats
