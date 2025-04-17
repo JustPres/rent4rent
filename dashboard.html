@@ -45,10 +45,6 @@
       <h3 class="text-xl font-semibold">Pending Approvals</h3>
       <p id="pending-count" class="text-3xl font-bold">0</p>
     </div>
-    <div class="bg-yellow-600 text-white p-6 rounded-lg shadow-md">
-      <h3 class="text-xl font-semibold">Messages</h3>
-      <p class="text-3xl font-bold">0</p>
-    </div>
   </div>
 
   <!-- Activity Feed -->
@@ -106,24 +102,34 @@
       pendingCount = 0;
 
       querySnapshot.forEach((doc) => {
-        const data = doc.data();
+  const data = doc.data();
+  console.log("Status value from Firestore:", `"${data.status}"`);
 
-        // Count by status
-        if (data.status === "Approved") activeCount++;
-        else if (data.status === "In Review") pendingCount++;
+  const status = data.status?.toLowerCase().trim(); // Normalize the status
+  let statusClass = "";
 
-        // Render each listing
-      // Render each listing
-const li = document.createElement("li");
-li.className = "bg-white p-4 border rounded-lg shadow-sm";
-li.innerHTML = `
-  <h3 class="text-lg font-semibold">${data.name || 'N/A'}</h3> <!-- Default to 'N/A' if propertyType is undefined -->
-  <p>${data.location} — <span class="font-semibold">${data.price}</span></p>
-  <span class="text-sm font-medium text-${data.status === 'Approved' ? 'green' : 'yellow'}-600">${data.status}</span>
-`;
-listingFeed.appendChild(li);
+  if (status === "approved") {
+    activeCount++;
+    statusClass = "bg-green-100 text-green-800";
+  } else if (status === "rejected") {
+    statusClass = "bg-red-100 text-red-800";
+  } else {
+    pendingCount++;
+    statusClass = "bg-yellow-100 text-yellow-800";
+  }
 
-      });
+  const li = document.createElement("li");
+  li.className = "bg-white p-4 border rounded-lg shadow-sm";
+  li.innerHTML = `
+    <h3 class="text-lg font-semibold">${data.name || 'N/A'}</h3>
+    <p>${data.location} — <span class="font-semibold">${data.price}</span></p>
+    <span class="inline-block px-2 py-1 mt-2 text-sm font-semibold rounded-full ${statusClass}">
+      ${data.status}
+    </span>
+  `;
+  listingFeed.appendChild(li);
+});
+
 
       // Update stats
       activeCountEl.textContent = activeCount;

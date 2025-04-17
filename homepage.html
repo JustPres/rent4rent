@@ -78,57 +78,31 @@
   <!-- DISPLAY PROPERTY LISTINGS -->
   <section class="bg-gray-50 py-10">
     <div class="container mx-auto px-4">
-      <h2 class="text-2xl font-bold text-center mb-6 text-indigo-700">Available Properties</h2>
+      <h2 class="text-2xl font-bold text-center mb-6 text-indigo-700">Your Available Properties</h2>
       <div id="property-listings" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         <!-- Listings will appear here -->
       </div>
     </div>
   </section>
 
-  <!-- PUBLIC VIEW OF APPROVED PROPERTIES -->
-  <section class="bg-gray-50 py-10">
-    <div class="container mx-auto px-4">
-      <h2 class="text-2xl font-bold text-center mb-6 text-indigo-700">Public View of Approved Properties</h2>
-      <div id="approved-properties" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <!-- Dummy approved property listings -->
-        <div class="bg-white rounded-lg shadow-md overflow-hidden">
-          <img src="https://via.placeholder.com/500x300" alt="Approved Property 1" class="w-full h-48 object-cover">
-          <div class="p-4">
-            <h3 class="text-lg font-bold mb-1">Luxury House in Manila</h3>
-            <p class="text-gray-600">Manila, Philippines</p>
-            <p class="text-indigo-600 font-semibold mt-2">₱10,000 – ₱15,000</p>
-            <span class="inline-block mt-2 px-2 py-1 text-sm text-white bg-green-500 rounded-full">Approved</span>
-          </div>
-        </div>
-        <div class="bg-white rounded-lg shadow-md overflow-hidden">
-          <img src="https://via.placeholder.com/500x300" alt="Approved Property 2" class="w-full h-48 object-cover">
-          <div class="p-4">
-            <h3 class="text-lg font-bold mb-1">Cozy Condo in Cebu</h3>
-            <p class="text-gray-600">Cebu, Philippines</p>
-            <p class="text-indigo-600 font-semibold mt-2">₱8,000 – ₱12,000</p>
-            <span class="inline-block mt-2 px-2 py-1 text-sm text-white bg-green-500 rounded-full">Approved</span>
-          </div>
-        </div>
-        <div class="bg-white rounded-lg shadow-md overflow-hidden">
-          <img src="https://via.placeholder.com/500x300" alt="Approved Property 3" class="w-full h-48 object-cover">
-          <div class="p-4">
-            <h3 class="text-lg font-bold mb-1">Modern Apartment in Davao</h3>
-            <p class="text-gray-600">Davao, Philippines</p>
-            <p class="text-indigo-600 font-semibold mt-2">₱6,000 – ₱9,000</p>
-            <span class="inline-block mt-2 px-2 py-1 text-sm text-white bg-green-500 rounded-full">Approved</span>
-          </div>
-        </div>
-      </div>
+ <!-- PUBLIC VIEW OF APPROVED PROPERTIES -->
+ <section class="bg-gray-50 py-10">
+  <div class="container mx-auto px-4">
+    <h2 class="text-2xl font-bold text-center mb-6 text-indigo-700">Public Listings (Approved)</h2>
+    <div id="approved-properties" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- Dynamic approved listings will appear here -->
     </div>
-  </section>
+  </div>
+</section>
 
   <!-- FIREBASE + DISPLAY SCRIPT -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
     import { getAuth } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
-    import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, getDocs, } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
     import { query, where } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
-
+    import { onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyA5i8nbw8A4JDVUlJF3fZ7MIs9ed7S6fIc",
@@ -202,26 +176,19 @@
 });
 
     // Load properties
-    const listingsContainer = document.getElementById("property-listings");
-
-    async function loadProperties() {
+  const listingsContainer = document.getElementById("property-listings");
+  async function loadProperties() {
   const user = auth.currentUser;
   if (!user) return; // If there's no user, don't proceed
-
   const userEmail = user.email;
-  
   // Query to filter properties by the logged-in user's email (submittedBy field)
   const q = query(collection(db, "property"), where("submittedBy", "==", userEmail));
-  
   const querySnapshot = await getDocs(q);
   listingsContainer.innerHTML = "";
-
   querySnapshot.forEach((doc) => {
     const data = doc.data();
-
     const card = document.createElement("div");
     card.className = "bg-white rounded-lg shadow-md overflow-hidden";
-
     card.innerHTML = `
       <img src="${data.image}" alt="${data.name}" class="w-full h-48 object-cover">
       <div class="p-4">
@@ -235,21 +202,65 @@
     listingsContainer.appendChild(card);
   });
 }
+// PUBLIC VIEW - Approved Properties (Load once)
+const publicApprovedContainer = document.getElementById("approved-properties");
 
-    function getStatusBadgeColor(status) {
-      switch (status) {
-        case "Approved":
-          return "bg-green-500";
-        case "Rejected":
-          return "bg-red-500";
-        case "In Review":
-        default:
-          return "bg-yellow-500";
-      }
-    }
+async function loadApprovedPublicProperties() {
+  try {
+    const approvedQuery = query(
+      collection(db, "property"),
+      where("status", "==", "approved")
+    );
+
+    const querySnapshot = await getDocs(approvedQuery);
+    publicApprovedContainer.innerHTML = "";
+
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+
+      const card = document.createElement("div");
+      card.className = "bg-white rounded-lg shadow-md overflow-hidden";
+
+      card.innerHTML = `
+        <img src="${data.image}" alt="${data.name}" class="w-full h-48 object-cover">
+        <div class="p-4">
+          <h3 class="text-lg font-bold mb-1">${data.name}</h3>
+          <p class="text-gray-600">${data.location}</p>
+          <p class="text-indigo-600 font-semibold mt-2">${data.price}</p>
+          <span class="inline-block mt-2 px-2 py-1 text-sm text-white bg-green-500 rounded-full">
+            Approved
+          </span>
+        </div>
+      `;
+
+      publicApprovedContainer.appendChild(card);
+    });
+  } catch (error) {
+    console.error("Error loading approved public properties:", error);
+  }
+}
+
+
+function getStatusBadgeColor(status) {
+  switch (status?.toLowerCase()) {
+    case "approved":
+      return "bg-green-500";
+    case "rejected":
+      return "bg-red-500";
+    case "in review":
+    default:
+      return "bg-yellow-500";
+  }
+}
+
 
     // Load on page load
-    loadProperties();
+    loadApprovedPublicProperties();
+    onAuthStateChanged(auth, (user) => {
+  if (user) {
+    loadProperties(); // only load after we’re sure the user is authenticated
+  }
+});
   </script>
 </body>
 </html>
