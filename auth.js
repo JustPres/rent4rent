@@ -5,6 +5,34 @@ import {
   signInWithEmailAndPassword,
   onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
+import {
+  GoogleAuthProvider,
+  signInWithPopup
+} from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
+
+// Google Sign-In
+const googleBtn = document.getElementById("google-signin");
+const provider = new GoogleAuthProvider();
+
+if (googleBtn) {
+  googleBtn.addEventListener("click", () => {
+    signInWithPopup(auth, provider)
+      .then((result) => {
+        const user = result.user;
+
+        // Redirect based on email
+        if (user.email === "adminrent4rent@gmail.com") {  // <-- typo fixed here
+          window.location.href = "admin-dashboard.html";
+        } else {
+          window.location.href = "dashboard.html";
+        }
+      })
+      .catch((error) => {
+        showMessage(`❌ ${error.message}`, "red");
+      });
+  });
+}
+
 
 // Firebase config
 const firebaseConfig = {
@@ -31,17 +59,6 @@ function showMessage(msg, color = "green") {
     message.classList.add("hidden");
   }, 3000);
 }
-
-// Check if user is already logged in and redirect
-onAuthStateChanged(auth, (user) => {
-  if (user) {
-    if (user.email === "admin@rent.com") {
-      window.location.href = "admin-dashboard.html";
-    } else {
-      window.location.href = "dashboard.html";
-    }
-  }
-});
 
 // Sign Up logic
 const signupForm = document.getElementById("signup-form");

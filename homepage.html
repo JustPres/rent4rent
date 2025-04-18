@@ -61,18 +61,53 @@
       <form id="propertyForm" class="grid gap-4">
         <input type="text" placeholder="Property Name or Type (e.g. Condo, Apartment)" id="property-name" class="p-3 border rounded">
         <input type="text" placeholder="Location (City, Barangay, etc.)" id="property-location" class="p-3 border rounded">
-
+      
         <div class="flex space-x-2">
-          <input type="number" inputmode="numeric" pattern="\d*" placeholder="₱ Min" id="price-min" class="p-3 border rounded w-1/2">
-          <input type="number" inputmode="numeric" pattern="\d*" placeholder="₱ Max" id="price-max" class="p-3 border rounded w-1/2">
+          <div class="relative w-1/2">
+            <span class="absolute inset-y-0 left-3 flex items-center text-gray-500 text-sm pointer-events-none">₱</span>
+            <input 
+              type="number" 
+              inputmode="numeric" 
+              pattern="\d*" 
+              placeholder="Min" 
+              id="price-min" 
+              class="pl-7 p-3 border rounded w-full"
+            >
+          </div>
+        
+          <div class="relative w-1/2">
+            <span class="absolute inset-y-0 left-3 flex items-center text-gray-500 text-sm pointer-events-none">₱</span>
+            <input 
+              type="number" 
+              inputmode="numeric" 
+              pattern="\d*" 
+              placeholder="Max" 
+              id="price-max" 
+              class="pl-7 p-3 border rounded w-full"
+            >
+          </div>
         </div>
-
+        
         <input type="text" placeholder="Image URL" id="property-image" class="p-3 border rounded">
-
+        <!-- New Fields -->
+        <input type="text" placeholder="Latitude" id="property-latitude" class="p-3 border rounded">
+        <input type="text" placeholder="Longitude" id="property-longitude" class="p-3 border rounded">
+        <input type="tel" 
+          placeholder="User Contact (11-digit Number)" 
+          id="user-contact" 
+          class="p-3 border rounded" 
+          pattern="^09[0-9]{9}$" 
+          maxlength="11" 
+          inputmode="numeric" 
+          required>
+        <small class="text-sm text-gray-500 ml-1">Format: 09123456789</small>
+        <input type="text" placeholder="Social Media Links (Facebook, Instagram)" id="social-media" class="p-3 border rounded">
+        
         <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold p-3 rounded">
           Add Listing
         </button>
       </form>
+      
       <p id="submit-msg" class="mt-4 text-center text-green-600 hidden">Property added successfully!</p>
       <p id="error-msg" class="mt-2 text-center text-red-600 hidden">Please fill in all fields correctly.</p>
     </div>
@@ -88,7 +123,7 @@
     <div class="container mx-auto px-4">
       <h2 class="text-2xl font-bold text-center mb-6 text-indigo-700">Your Available Properties</h2>
       <div id="property-listings" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <!-- Listings will appear here -->
+        <!-- Dynamically added property cards will go here -->
       </div>
     </div>
   </section>
@@ -98,10 +133,10 @@
   <div class="container mx-auto px-4">
     <h2 class="text-2xl font-bold text-center mb-6 text-indigo-700">Public Listings (Approved)</h2>
     <div id="approved-properties" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <!-- Dynamic approved listings will appear here -->
+      <!-- Dynamically added approved property cards will go here -->
     </div>
   </div>
-</section>
+</section>>
 
   <!-- FIREBASE + DISPLAY SCRIPT -->
   <script type="module">
@@ -111,6 +146,7 @@
     import { query, where } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
     import { onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
+    
 
     const firebaseConfig = {
       apiKey: "AIzaSyA5i8nbw8A4JDVUlJF3fZ7MIs9ed7S6fIc",
@@ -125,6 +161,7 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
+     
 
     const dashboardBtn = document.getElementById("dashboard-btn");
     dashboardBtn.addEventListener("click", () => {
@@ -142,8 +179,13 @@
   const minPrice = document.getElementById("price-min").value.trim();
   const maxPrice = document.getElementById("price-max").value.trim();
   const image = document.getElementById("property-image").value.trim();
+  const latitude = document.getElementById("property-latitude").value.trim();
+  const longitude = document.getElementById("property-longitude").value.trim();
+  const userContact = document.getElementById("user-contact").value.trim();
+  const socialMedia = document.getElementById("social-media").value.trim();
 
-  if (!name || !location || !minPrice || !maxPrice || !image) {
+
+  if (!name || !location || !minPrice || !maxPrice || !image || !latitude || !longitude || !userContact || !socialMedia) {
     errorMsg.classList.remove("hidden");
     msg.classList.add("hidden");
     return;
@@ -156,12 +198,16 @@
     const submittedBy = user ? user.email : "Unknown";
 
     try {
-      // Add the property to Firestore
+      // Add the property to Firestore with additional fields
       await addDoc(collection(db, "property"), {
         name,
         location,
         price,
         image,
+        latitude,
+        longitude,
+        userContact,
+        socialMedia,
         status: "In Review",
         createdAt: new Date(),
         submittedBy: auth.currentUser.email,
@@ -183,43 +229,63 @@
   });
 });
 
+
     // Load properties
   const listingsContainer = document.getElementById("property-listings");
   async function loadProperties() {
   const user = auth.currentUser;
-  if (!user) return; // If there's no user, don't proceed
+  if (!user) return;
   const userEmail = user.email;
-  // Query to filter properties by the logged-in user's email (submittedBy field)
+
   const q = query(collection(db, "property"), where("submittedBy", "==", userEmail));
   const querySnapshot = await getDocs(q);
   listingsContainer.innerHTML = "";
+
   querySnapshot.forEach((doc) => {
     const data = doc.data();
+
     const card = document.createElement("div");
     card.className = "bg-white rounded-lg shadow-md overflow-hidden";
+
     card.innerHTML = `
       <img src="${data.image}" alt="${data.name}" class="w-full h-48 object-cover">
       <div class="p-4">
         <h3 class="text-lg font-bold mb-1">${data.name}</h3>
         <p class="text-gray-600">${data.location}</p>
         <p class="text-indigo-600 font-semibold mt-2">${data.price}</p>
+
         <span class="inline-block mt-2 px-2 py-1 text-sm text-white ${getStatusBadgeColor(data.status)} rounded-full">${data.status}</span>
+
+        ${data.latitude && data.longitude ? `
+        <div class="mt-2 flex items-center text-blue-600 text-sm">
+          <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 12.414M12 3v.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          <a href="https://www.google.com/maps?q=${data.latitude},${data.longitude}" target="_blank">View on Google Maps</a>
+        </div>` : ''}
+
+        ${data.userContact ? `
+        <div class="mt-2 flex items-center text-gray-700 text-sm">
+          <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 5h2l3 7-1.5 1.5a10 10 0 005 5L14 19l7-3v-2l-2-2-4 4-2-2 4-4-2-2H9L7 3H3v2z"/></svg>
+          <span>${data.userContact}</span>
+        </div>` : ''}
+
+        ${data.socialMedia ? `
+        <div class="mt-2 flex items-center text-indigo-700 text-sm">
+          <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 8a6 6 0 11-12 0 6 6 0 0112 0zm2 0h.01M12 14v6"></path></svg>
+          <a href="${data.socialMedia}" target="_blank">Social Profile</a>
+        </div>` : ''}
       </div>
     `;
 
     listingsContainer.appendChild(card);
   });
 }
+
 // PUBLIC VIEW - Approved Properties (Load once)
 const publicApprovedContainer = document.getElementById("approved-properties");
 
 async function loadApprovedPublicProperties() {
   try {
-    const approvedQuery = query(
-      collection(db, "property"),
-      where("status", "==", "approved")
-    );
-
+    const approvedQuery = query(collection(db, "property"), where("status", "==", "approved"));
     const querySnapshot = await getDocs(approvedQuery);
     publicApprovedContainer.innerHTML = "";
 
@@ -235,9 +301,26 @@ async function loadApprovedPublicProperties() {
           <h3 class="text-lg font-bold mb-1">${data.name}</h3>
           <p class="text-gray-600">${data.location}</p>
           <p class="text-indigo-600 font-semibold mt-2">${data.price}</p>
-          <span class="inline-block mt-2 px-2 py-1 text-sm text-white bg-green-500 rounded-full">
-            Approved
-          </span>
+
+          <span class="inline-block mt-2 px-2 py-1 text-sm text-white bg-green-500 rounded-full">Approved</span>
+
+          ${data.latitude && data.longitude ? `
+          <div class="mt-2 flex items-center text-blue-600 text-sm">
+            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 12.414M12 3v.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <a href="https://www.google.com/maps?q=${data.latitude},${data.longitude}" target="_blank">View on Google Maps</a>
+          </div>` : ''}
+
+          ${data.userContact ? `
+          <div class="mt-2 flex items-center text-gray-700 text-sm">
+            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 5h2l3 7-1.5 1.5a10 10 0 005 5L14 19l7-3v-2l-2-2-4 4-2-2 4-4-2-2H9L7 3H3v2z"/></svg>
+            <span>${data.userContact}</span>
+          </div>` : ''}
+
+          ${data.socialMedia ? `
+          <div class="mt-2 flex items-center text-indigo-700 text-sm">
+            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 8a6 6 0 11-12 0 6 6 0 0112 0zm2 0h.01M12 14v6"></path></svg>
+            <a href="${data.socialMedia}" target="_blank">Social Profile</a>
+          </div>` : ''}
         </div>
       `;
 
@@ -247,6 +330,7 @@ async function loadApprovedPublicProperties() {
     console.error("Error loading approved public properties:", error);
   }
 }
+
 
 
 function getStatusBadgeColor(status) {
