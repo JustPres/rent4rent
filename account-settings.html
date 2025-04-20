@@ -1,11 +1,212 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Account-settings</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Account Settings</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- EmailJS SDK -->
+  <script type="text/javascript" src="https://cdn.emailjs.com/dist/email.min.js"></script>
+  <script type="text/javascript">
+    // Initialize EmailJS with your public API key
+    emailjs.init("9rWf_qLSgNhsaQX1c");
+  </script>
 </head>
-<body>
-    
+
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-6">
+
+  <div class="w-full max-w-lg bg-white p-8 rounded-lg shadow-lg space-y-8">
+
+    <!-- EMAIL -->
+    <section id="email-section" class="space-y-2">
+      <h2 class="text-xl font-semibold">Email Address</h2>
+      <div class="flex items-center justify-between">
+        <span id="current-email" class="text-gray-700">Loading...</span>
+        <button id="edit-email-btn" class="text-indigo-600 hover:underline">Edit</button>
+      </div>
+      <form id="email-form" class="hidden space-y-2">
+        <input type="email" id="new-email" placeholder="New email" class="w-full p-2 border rounded"/>
+        <button class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">Save</button>
+      </form>
+    </section>
+
+    <!-- PASSWORD -->
+    <section id="password-section" class="space-y-2">
+      <h2 class="text-xl font-semibold">Password</h2>
+      <button id="change-pw-btn" class="text-indigo-600 hover:underline">Change Password</button>
+      <form id="password-form" class="hidden space-y-2">
+        <input type="password" id="current-pw" placeholder="Current password" class="w-full p-2 border rounded"/>
+        <input type="password" id="new-pw" placeholder="New password" class="w-full p-2 border rounded"/>
+        <button class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">Save</button>
+      </form>
+    </section>
+
+    <!-- TWO‑FACTOR / VERIFY EMAIL -->
+    <section class="space-y-2">
+      <h2 class="text-xl font-semibold">Two‑Factor Authentication</h2>
+      <button id="setup-2fa-btn" class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
+        Set Up Two-Factor Authentication
+      </button>
+      <p id="2fa-status" class="text-sm text-gray-600"></p>
+      <h2 class="text-xl font-semibold mt-6">Email Verification</h2>
+      <button id="send-verif-btn" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+        Send Verification Email
+      </button>
+      <p id="verif-status" class="text-sm text-gray-600"></p>
+    </section>
+
+    <!-- CONTACT FORM -->
+    <section id="contact" class="pb-20 px-6">
+      <div class="container mx-auto max-w-3xl">
+        <div class="neu-card rounded-3xl p-8 mb-12 text-center">
+          <h2 class="text-3xl font-bold mb-6 gradient-text">Get In Touch</h2>
+          <p class="text-gray-600 mb-8">Send me a message using the form below and I'll get back to you ASAP!</p>
+          
+          <!-- EmailJS Contact Form -->
+          <form id="contactForm" class="space-y-4" onsubmit="handleSubmit(event)">
+            <!-- IMPORTANT: Use the exact field names from your EmailJS template -->
+            <div>
+              <label class="block text-gray-600 mb-2">Name</label>
+              <input 
+                type="text" 
+                name="name" 
+                required 
+                class="neu-light w-full p-3 rounded-xl focus:outline-none" 
+              />
+            </div>
+            <div>
+              <label class="block text-gray-600 mb-2">Email</label>
+              <input 
+                type="email" 
+                name="email" 
+                required 
+                class="neu-light w-full p-3 rounded-xl focus:outline-none" 
+              />
+            </div>
+            <div>
+              <label class="block text-gray-600 mb-2">Message</label>
+              <textarea 
+                name="message" 
+                rows="4" 
+                required 
+                class="neu-light w-full p-3 rounded-xl focus:outline-none"
+              ></textarea>
+            </div>
+            <button 
+              type="submit" 
+              class="neu-button w-full py-3 rounded-xl bg-gradient-to-r from-purple-500 to-blue-500 text-white font-semibold hover:shadow-lg"
+            >
+              Send
+            </button>
+          </form>
+          
+          <!-- Submission Response (optional) -->
+          <div id="contactResponse" class="mt-4"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- BACK TO DASHBOARD -->
+    <div class="text-right">
+      <button id="back-to-dash" class="mt-4 px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300">
+        ← Back to Dashboard
+      </button>
+    </div>
+
+  </div>
+
+  <!-- SCRIPT FOR FORM HANDLING -->
+  <script>
+    function handleSubmit(e) {
+      e.preventDefault();
+      
+      // Use the provided service ID and template ID from EmailJS
+      emailjs.sendForm('service_ayks2go', 'template_6gtepzx', e.target)
+        .then(function(response) {
+          console.log('SUCCESS!', response.status, response.text);
+          document.getElementById('contactResponse').innerHTML = 
+            '<p class="text-green-600 font-semibold">Thank you! Your message has been sent.</p>';
+          e.target.reset();
+        }, function(error) {
+          console.log('FAILED...', error);
+          document.getElementById('contactResponse').innerHTML = 
+            '<p class="text-red-600 font-semibold">Oops! Something went wrong. Please try again later.</p>';
+        });
+    }
+  </script>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, reauthenticateWithCredential,
+             EmailAuthProvider, updateEmail, updatePassword, sendEmailVerification }
+      from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc, collection, addDoc }
+      from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyA5i8nbw8A4JDVUlJF3fZ7MIs9ed7S6fIc",
+      authDomain: "rent4rent-e1e0b.firebaseapp.com",
+      projectId: "rent4rent-e1e0b",
+      storageBucket: "rent4rent-e1e0b.appspot.com",
+      messagingSenderId: "467128925177",
+      appId: "1:467128925177:web:b62c625847db1a18319b28",
+      measurementId: "G-EJ0PL7CNQQ"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db   = getFirestore(app);
+
+    // Show current email
+    onAuthStateChanged(auth, user => {
+      if (!user) return window.location = 'index.html';
+      document.getElementById('current-email').textContent = user.email;
+    });
+
+    // UTILS
+    function toggle(el1, el2) {
+      document.getElementById(el1).classList.toggle('hidden');
+      document.getElementById(el2).classList.toggle('hidden');
+    }
+
+    // Email Edit
+    document.getElementById('edit-email-btn').onclick = () => toggle('current-email','email-form');
+    document.querySelector('#email-form button').onclick = async e => {
+      e.preventDefault();
+      const newEmail = document.getElementById('new-email').value;
+      const password = prompt('Enter current password');
+      const cred = EmailAuthProvider.credential(auth.currentUser.email,password);
+      await reauthenticateWithCredential(auth.currentUser,cred);
+      await updateEmail(auth.currentUser,newEmail);
+      document.getElementById('current-email').textContent=newEmail;
+      alert('Email updated!');
+      toggle('current-email','email-form');
+    };
+
+    // Password Change
+    document.getElementById('change-pw-btn').onclick = () => toggle('change-pw-btn','password-form');
+    document.querySelector('#password-form button').onclick = async e => {
+      e.preventDefault();
+      const oldPw = document.getElementById('current-pw').value;
+      const newPw = document.getElementById('new-pw').value;
+      const cred  = EmailAuthProvider.credential(auth.currentUser.email,oldPw);
+      await reauthenticateWithCredential(auth.currentUser,cred);
+      await updatePassword(auth.currentUser,newPw);
+      alert('Password changed!');
+      toggle('change-pw-btn','password-form');
+    };
+
+    // Email Verification
+    document.getElementById('send-verif-btn').onclick = async () => {
+      await sendEmailVerification(auth.currentUser);
+      document.getElementById('verif-status').textContent = 'Verification link sent!';
+    };
+
+    // Feedback saved to Firestore
+    const feedbackBtn    = document.get
+
+  </script>
 </body>
+
 </html>
